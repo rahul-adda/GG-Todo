@@ -1,0 +1,14 @@
+[
+  {
+    "_id": "user_admin_1",
+    "name": "Rohit Sharma",
+    "email": "rohit@greedygames.com",
+    "role": 1
+  },
+  {
+    "_id": "user_regular_2",
+    "name": "Ankit Verma",
+    "email": "ankit@example.com",
+    "role": 2
+  }
+]

@@ -1,0 +1,20 @@
+[
+  {
+    "_id": "6659b0173345a6b5a3416433",
+    "title": "Dashboard",
+    "type": "item",
+    "url": "/dashboard",
+    "icon": "icons.dashboard",
+    "isDeleted": false,
+    "created": "2024-05-31T11:00:40.702Z"
+  },
+  {
+    "_id": "6659b0173345a6b5a3416432",
+    "title": "User",
+    "type": "item",
+    "url": "/users",
+    "icon": "icons.teamIcon",
+    "isDeleted": false,
+    "created": "2024-05-31T11:00:40.702Z"
+  }
+]
