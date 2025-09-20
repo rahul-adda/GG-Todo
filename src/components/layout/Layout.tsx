@@ -49,8 +49,7 @@ export default function Layout({ children }: LayoutProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [open, setOpen] = useState(false);
-  const { user, loading } = useAuth();
-
+  const { user, isLoading } = useAuth();
   const handleDrawerToggle = () => setOpen(!open);
 
   const { data: sidebarItems = [] } = useQuery({
@@ -67,9 +66,9 @@ export default function Layout({ children }: LayoutProps) {
   );
 
   useEffect(() => {
-    if (loading) return;
+    if (isLoading) return;
     setOpen(user?.role === 1);
-  }, [loading, user]);
+  }, [isLoading, user]);
 
 
   const pathname = usePathname();

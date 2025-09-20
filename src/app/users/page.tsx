@@ -1,108 +1,60 @@
-"use client"
+"use client";
+import { useAuth } from "@/hooks/useAuth";
+import { useCustomMutation, useCustomQuery } from "@/lib/QueryHooks";
 import MySwitch from "@/ui-component/MySwitch";
 import CommonTable, { TableCellDef } from "@/ui-component/Table/CommonTable";
+import { formatDate } from "@/utils/commonTable";
 import { Box, Button, Typography } from "@mui/material";
 import { useState } from "react";
-type Row = { name: string; email: string; role: number; todosCount: number; createdAt: string; enableSearch?: boolean; removeSearch?: boolean; status:boolean };
+type Row = {
+  name: string;
+  email: string;
+  role: number;
+  todosCount: number;
+  createdAt: string;
+  enableSearch?: boolean;
+  removeSearch?: boolean;
+  status: boolean;
+  _id: string;
+};
 import { AiOutlinePlus } from "react-icons/ai";
 import { TbFilter } from "react-icons/tb";
-
-
-const users = [
-  {
-    name: "Rahul Sharma",
-    status: true,
-    email: "rahul.sharma@example.com",
-    role: 1,
-    createdAt: "2023-08-01T10:30:00Z",
-    updatedAt: "2023-08-10T12:45:00Z",
-    todosCount: 5,
-  },
-  {
-    name: "Priya Verma",
-    status: true,
-    email: "priya.verma@example.com",
-    role: 2,
-    createdAt: "2023-08-02T09:20:00Z",
-    updatedAt: "2023-08-11T14:10:00Z",
-    todosCount: 8,
-  },
-  {
-    name: "Aman Gupta",
-    status: false,
-    email: "aman.gupta@example.com",
-    role: 1,
-    createdAt: "2023-08-03T08:15:00Z",
-    updatedAt: "2023-08-12T16:25:00Z",
-    todosCount: 3,
-  },
-  {
-    name: "Sneha Singh",
-    status: true,
-    email: "sneha.singh@example.com",
-    role: 2,
-    createdAt: "2023-08-04T11:50:00Z",
-    updatedAt: "2023-08-13T18:40:00Z",
-    todosCount: 6,
-  },
-  {
-    name: "Arjun Mehta",
-    status: false,
-    email: "arjun.mehta@example.com",
-    role: 1,
-    createdAt: "2023-08-05T14:05:00Z",
-    updatedAt: "2023-08-14T20:55:00Z",
-    todosCount: 2,
-  },
-  {
-    name: "Kavya Nair",
-    status: true,
-    email: "kavya.nair@example.com",
-    role: 2,
-    createdAt: "2023-08-06T15:25:00Z",
-    updatedAt: "2023-08-15T09:05:00Z",
-    todosCount: 7,
-  },
-  // {
-  //   name: "Rohit Yadav",
-  // status: true,
-  //   email: "rohit.yadav@example.com",
-  //   role: 1,
-  //   createdAt: "2023-08-07T17:40:00Z",
-  //   updatedAt: "2023-08-16T11:20:00Z",
-  //   todosCount: 4,
-  // },
-  // {
-  //   name: "Anjali Das",
-  // status: true,
-  //   email: "anjali.das@example.com",
-  //   role: 2,
-  //   createdAt: "2023-08-08T19:55:00Z",
-  //   updatedAt: "2023-08-17T13:35:00Z",
-  //   todosCount: 9,
-  // },
-  // {
-  //   name: "Vikram Malhotra",
-  // status: true,
-  //   email: "vikram.malhotra@example.com",
-  //   role: 1,
-  //   createdAt: "2023-08-09T21:10:00Z",
-  //   updatedAt: "2023-08-18T15:50:00Z",
-  //   todosCount: 1,
-  // },
-  // {
-  //   name: "Neha Reddy",
-  // status: true,
-  //   email: "neha.reddy@example.com",
-  //   role: 2,
-  //   createdAt: "2023-08-10T23:25:00Z",
-  //   updatedAt: "2023-08-19T17:05:00Z",
-  //   todosCount: 10,
-  // },
-];
-
+import CreateUserCard from "./CreateUser";
+import CustomDrawer from "@/ui-component/CustomDrawer";
 
 export default function DashboardPage() {
+  const { user } = useAuth();
+  const [open, setOpen] = useState(false);
+
+  const { mutation, queryClient } = useCustomMutation({
+    onSuccess: (data, variables, context) => {
+      queryClient.invalidateQueries({
+        queryKey: ["user_list"],
+      });
+    },
+  });
+
+  const { data, isPending, isFetching, ...rest } = useCustomQuery({
+    queryProps: {
+      queryKey: ["user_list"],
+    },
+    payload: {
+      url: "user",
+    },
+  });
+
+  const handleSwitch = (userId: string, status: boolean) => {
+    mutation.mutate({
+      method: "PUT",
+      wantToast: true,
+      url: `user/${userId}`,
+      userId,
+      data: {
+        status,
+      },
+    });
+  };
+
   const columns: TableCellDef<Row>[] = [
     {
       headName: "Name",
@@ -117,7 +69,7 @@ export default function DashboardPage() {
               fontSize: "14px",
               lineHeight: "150%",
               letterSpacing: "0.5%",
-              color: "rgba(33, 37, 43, 1)"
+              color: "rgba(33, 37, 43, 1)",
             }}
           >
             {row.name}
@@ -129,28 +81,35 @@ export default function DashboardPage() {
               fontSize: "12px",
               lineHeight: "150%",
               letterSpacing: "0.5%",
-              color: "rgba(152, 159, 171, 1)"
+              color: "rgba(152, 159, 171, 1)",
             }}
           >
             {row.email}
           </span>
         </div>
-      )
+      ),
     },
-    { headName: "Role", key: "role", customData:(data)=> data.role === 1 ? "Super Admin" : "Viewer" },
+    {
+      headName: "Role",
+      key: "role",
+      customData: (data) => (data.role === 1 ? "Super Admin" : "Viewer"),
+    },
     {
       headName: "Actions",
       type: "action",
       customBody: (rowData) => {
-        const [checked, setChecked] = useState(rowData.status || false);
-  
-        const handleChange = (event: any) => {
-          setChecked(event.target.checked);
-          console.log("Switch toggled for row:", rowData.name, event.target.checked);
-        };
-        return <MySwitch checked={checked} onChange={handleChange} />;
+        return (
+          <MySwitch
+            loading={
+              mutation.isPending && mutation.variables?.userId === rowData._id
+            }
+            checked={rowData.status}
+            onChange={(e) => handleSwitch(rowData._id, e.target.checked)}
+          />
+        );
       },
-    },  ];
+    },
+  ];
 
   const TableName = () => {
     return (
@@ -174,7 +133,7 @@ export default function DashboardPage() {
           letterSpacing="0.5%"
           color="rgba(152, 159, 171, 1)"
         >
-          Last Updated : 16/08/2023 18:00
+          Last Updated : {formatDate(user?.lastLogin)}
         </Typography>
       </Box>
     );
@@ -198,7 +157,7 @@ export default function DashboardPage() {
             "&:hover": {
               bgcolor: "rgba(240,241,242,1)",
             },
-            boxShadow: 'none'
+            boxShadow: "none",
           }}
         >
           Filter
@@ -206,6 +165,7 @@ export default function DashboardPage() {
 
         <Button
           variant="contained"
+          onClick={() => setOpen(true)}
           startIcon={<AiOutlinePlus size={18} color="white" />}
           sx={{
             height: "36px",
@@ -218,7 +178,7 @@ export default function DashboardPage() {
             "&:hover": {
               bgcolor: "rgba(10,155,85,1)",
             },
-            boxShadow: 'none'
+            boxShadow: "none",
           }}
         >
           Add Users
@@ -230,18 +190,29 @@ export default function DashboardPage() {
     <div>
       <CommonTable<Row>
         tableStructure={columns}
-        data={users}
-        loading={false}
+        data={data?.users}
+        totalDataCount={data?.total || 0}
         buttonsAtSeachLevel={ActionButtons()}
         tableName={TableName()}
+        // reFetch={rest.refetch}
         // defaultSize={10}
         // defaultPage={1}
-        removeSerialNo={true}
+        loading={isPending && isFetching}
+        isFetching={isFetching}
+        isStale={rest?.isStale}
+        // reFetch={rest?.refetch}
+        // removeSerialNo={true}
         handleBackend={true}
         enableSort
         removeSearch={true}
-        defalutSortKey="createdAt"
       />
+      <CustomDrawer
+        open={open}
+        onClose={() => setOpen(false)}
+        title="Create User"
+      >
+        <CreateUserCard setOpen={(open: boolean) => setOpen(open)} />
+      </CustomDrawer>
     </div>
   );
 }

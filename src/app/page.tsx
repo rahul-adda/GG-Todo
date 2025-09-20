@@ -1,9 +1,42 @@
+"use client";
+import { useEffect, useState } from "react";
+import { useCustomMutation, useCustomQuery } from "@/lib/QueryHooks";
+import { useRouter } from "next/navigation";
+
 export default function HomePage() {
+  const router = useRouter();
+
+  const {
+    data: user,
+    isPending: userQueryLoading,
+    isFetching: userQueryFetching,
+    ...rest
+  } = useCustomQuery({
+    queryProps: {
+      queryKey: ["user"],
+    },
+    payload: {
+      url: "user/profile",
+    },
+  });
+
+  useEffect(() => {
+    if (!userQueryLoading || !userQueryFetching) {
+      if (user) {
+        router.replace("/dashboard");
+      } else {
+        router.replace("/login");
+      }
+    }
+  }, [user, userQueryLoading, userQueryFetching]);
+
   return (
-    <main style={{ padding: 24 }}>
-      <h1>Welcome to the Next.js Frontend Architecture Scaffold</h1>
-      <p>Open <code>/dashboard</code> to see the example dashboard.</p>
-      <p>Use <code>/api/auth/me?as=admin</code> or <code>/api/auth/me?as=regular</code> to switch mock user.</p>
-    </main>
+    <div className="p-6">
+      {user ? (
+        <h1 className="text-xl font-bold">Welcome, {user.email} 🎉</h1>
+      ) : (
+        <h1 className="text-xl font-bold">Loading user...</h1>
+      )}
+    </div>
   );
 }

@@ -76,7 +76,9 @@ export default function Sidebar({
           return (
             <ListItemButton
               key={item._id}
-              onClick={() => item.url && router.push(item.url)}
+              onClick={() => {
+                if (!isActive && item.url) router.push(item.url);
+              }}
               sx={{
                 pl: open ? 2 : 1,
                 justifyContent: open ? "flex-start" : "center",

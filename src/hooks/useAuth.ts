@@ -1,28 +1,60 @@
 "use client";
-import { useEffect, useState } from "react";
-import api from "@/lib/apiClient";
 
-export type IUser = {
-  _id: string;
-  name: string;
-  email: string;
-  role: number; // 1 = admin (sidebar visible), 2 = regular
-  avatar: string;
-  createdAt: string
-};
+import { useCustomQuery } from "@/lib/QueryHooks";
+import Cookies from "js-cookie";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
 export function useAuth() {
-  const [user, setUser] = useState<IUser | null>(null);
-  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const [redirected, setRedirected] = useState(false);
+
+  const { user, isPending, isFetching, error } = useUserProfile(!!Cookies.get("accessToken"));
 
   useEffect(() => {
-    let mounted = true;
-    api.get('/api/auth/me')
-      .then(res => { if (mounted) setUser(res.data.user); })
-      .catch(() => { if (mounted) setUser(null); })
-      .finally(() => { if (mounted) setLoading(false); });
-    return () => { mounted = false; };
-  }, []);
+    if (isPending || isFetching) return;
 
-  return { user, loading, isAuthenticated: !!user, setUser };
+    if (redirected) return;
+
+    if (!user) {
+      if (pathname !== "/login" && pathname !== "/signup") {
+        setRedirected(true);
+        router.replace("/login");
+      }
+      return;
+    }
+
+    if (pathname === "/login" || pathname === "/signup") {
+      setRedirected(true);
+      router.replace("/dashboard");
+      return;
+    }
+
+    if (pathname?.startsWith("/users") && user.role !== 1) {
+      setRedirected(true);
+      router.replace("/");
+      return;
+    }
+  }, [user, isPending, isFetching, pathname, redirected, router]);
+
+  return {
+    user,
+    isLoading: isPending || isFetching,
+  };
+}
+
+export function useUserProfile(fetchEnabled: boolean = true) {
+  const payload = useMemo(() => ({ url: "user/profile" }), []);
+
+  const { data: user, isPending, isFetching, error } = useCustomQuery({
+    queryProps: {
+      queryKey: ["user"],
+      // enabled: false,
+    },
+    payload,
+  });
+
+  return { user, isPending, isFetching, error };
 }

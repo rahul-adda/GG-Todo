@@ -14,14 +14,14 @@ export default function MyIconButton({
 }) {
   const colorFun = (theme, color) => {
     switch (color) {
-      case "primary":
-        return `${theme.palette.primary.main}20`;
-      case "error":
-        return `${theme.palette.error.main}20`;
-      case "orange":
-        return `${theme.palette.orange.main}30`;
-      case "disabled":
-        return `${theme.palette.grey?.["300"]}`;
+      // case "primary":
+      //   return `${theme.palette.primary.main}20`;
+      // case "error":
+      //   return `${theme.palette.error.main}20`;
+      // case "orange":
+      //   return `${theme.palette.orange.main}30`;
+      // case "disabled":
+      //   return `${theme.palette.grey?.["300"]}`;
     }
   };
 
